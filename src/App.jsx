@@ -1,19 +1,47 @@
 import React, { useState } from 'react';
 import DataView from './components/DataView';
-import BoxVisualizer from './components/BoxVisualizer';
+import BoxVisualization from './components/BoxVisualization';
+import Dropdown from './components/Dropdown';
+import actualShockDataInterpolated1 from './data/shock data samples';
 
-function App() {
-  const [sampleData, setSampleData] = useState([]);
+const App = () => {
+  const [selectedSample, setSelectedSample] = useState(actualShockDataInterpolated1[0]);
+
+  const handleSampleChange = (id) => {
+    const sample = actualShockDataInterpolated1.find((sample, index) => index === id);
+    if (sample) {
+      setSelectedSample(sample);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <header className="text-2xl font-bold my-4">Cardboard Box Visualizer</header>
-      <div className="flex w-full max-w-4xl">
-        <DataView className="w-1/3 p-4" onSampleChange={setSampleData} />
-        <BoxVisualizer className="w-2/3 p-4" data={sampleData} />
+    <div className="  justify-center items-center w-full h-screen ">
+      <div className=" justify-center items-center h-[400px]">
+        <div className=''>
+          <Dropdown
+            options={actualShockDataInterpolated1.map((sample, index) => ({ id: index, label: `Sample ${index + 1}` }))}
+            onChange={handleSampleChange}
+          />
+          <DataView
+            accelerometerData={{
+              x: selectedSample.accelerometer.xAxis,
+              y: selectedSample.accelerometer.yAxis,
+              z: selectedSample.accelerometer.zAxis,
+              magnitude: selectedSample.magnitude
+            }}
+          />
+        </div>
+        <BoxVisualization
+          accelerometerData={{
+            x: selectedSample.accelerometer.xAxis,
+            y: selectedSample.accelerometer.yAxis,
+            z: selectedSample.accelerometer.zAxis,
+            magnitude: selectedSample.magnitude
+          }}
+        />
       </div>
     </div>
   );
-}
+};
 
 export default App;
