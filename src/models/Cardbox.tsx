@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+
+import { OrbitControls } from '@react-three/drei';
 import { useGLTF } from '@react-three/drei';
 import { Vector3 } from 'three';
 
@@ -45,7 +47,7 @@ export function Model({ accelerometerData }: BoxVisualizationProps) {
       <mesh
         castShadow
         receiveShadow
-        geometry={nodes.CardboardBox_LP_lambert1_0.geometry}
+        geometry={(nodes.CardboardBox_LP_lambert1_0 as any).geometry}
         material={materials.lambert1}
         scale={0.01}
       />
