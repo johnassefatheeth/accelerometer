@@ -15,9 +15,9 @@ const App = () => {
   };
 
   return (
-    <div className="  justify-center items-center w-full h-screen ">
-      <div className=" justify-center items-center h-[400px]">
-        <div className=''>
+    <div className="justify-center items-center w-full h-screen">
+      <div className="justify-center items-center h-[400px]">
+        <div>
           <Dropdown
             options={actualShockDataInterpolated1.map((sample, index) => ({ id: index, label: `Sample ${index + 1}` }))}
             onChange={handleSampleChange}
