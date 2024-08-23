@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { TextureLoader } from 'three';
-import { Vector3 } from 'three';
+import { TextureLoader, Vector3 } from 'three';
 import { OrbitControls } from '@react-three/drei';
 
 type BoxVisualizationProps = {
@@ -11,6 +10,7 @@ type BoxVisualizationProps = {
     y: number;
     z: number;
     magnitude: number;
+    isSignificantShock: boolean; // Add this flag to indicate if it's the most significant shock
   };
 };
 
@@ -20,42 +20,52 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData }) => {
   const boxRef = useRef<any>();
 
   useEffect(() => {
-    // Convert accelerometer data to radians for rotation
     const rotationX = (Math.atan2(accelerometerData.y, accelerometerData.z) * 180) / Math.PI;
     const rotationY = (Math.atan2(accelerometerData.x, accelerometerData.z) * 180) / Math.PI;
 
     if (boxRef.current) {
       boxRef.current.rotation.set(rotationX, rotationY, 0);
 
-      // Handle movement and shock events based on accelerometer data
       if (accelerometerData.magnitude < 600) {
-        // Illustrate falling motion
-        boxRef.current.position.y -= 0.01; // Adjust the falling speed as needed
+        boxRef.current.position.y -= 0.01; // Falling motion
       } else if (accelerometerData.magnitude >= 600 && accelerometerData.magnitude <= 1400) {
-        // Indicate movement due to an external force
-        boxRef.current.position.x += accelerometerData.x * 0.01; // Adjust the movement speed based on accelerometer data
+        boxRef.current.position.x += accelerometerData.x * 0.01; // Movement
         boxRef.current.position.y += accelerometerData.y * 0.01;
         boxRef.current.position.z += accelerometerData.z * 0.01;
       }
 
-      // Additional logic for shock event visualization
-      // Include logic to illustrate the direction of the shock event
+      // Shock Event Visualization
+      if (accelerometerData.isSignificantShock) {
+        // Normalize accelerometer values to 1G
+        const normalizedX = accelerometerData.x / accelerometerData.magnitude;
+        const normalizedY = accelerometerData.y / accelerometerData.magnitude;
+        const normalizedZ = accelerometerData.z / accelerometerData.magnitude;
+
+        // Calculate the shock direction
+        const shockDirection = new Vector3(normalizedX, normalizedY, normalizedZ);
+        boxRef.current.position.add(shockDirection.multiplyScalar(0.1)); // Adjust the scalar as needed for visualization
+      }
     }
   }, [accelerometerData]);
 
   return (
     <mesh ref={boxRef}>
-      <primitive object={gltf.scene}>
-        {/* <meshStandardMaterial attach="material" map={trackerTexture} /> */}
-      </primitive>
+      <primitive object={gltf.scene} />
+      {/* Add the credit card tracker on top of the box */}
+      <mesh>
+        <planeGeometry args={[0.15, 0.08]} />
+        <meshStandardMaterial map={trackerTexture} />
+      </mesh>
     </mesh>
   );
 };
 
 const BoxVisualization: React.FC<BoxVisualizationProps> = (props) => {
   return (
-    <Canvas className=' h-[300px] ' camera={{ position: [0, 0, 1] }}>
-      <ambientLight intensity={1.5} />
+    <Canvas>
+      <ambientLight intensity={0.5} />
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+      <pointLight position={[-10, -10, -10]} />
       <BoxModel {...props} />
       <OrbitControls />
     </Canvas>

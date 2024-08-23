@@ -1,33 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-type DropdownProps = {
-  options: { id: number; label: string }[];
+type RangeSelectorProps = {
+  options: { id: number; label: string; magnitude: number }[];
   onChange: (selectedId: number) => void;
 };
 
-const Dropdown: React.FC<DropdownProps> = ({ options, onChange }) => {
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange(parseInt(event.target.value, 10));
+const RangeSelector: React.FC<RangeSelectorProps> = ({ options, onChange }) => {
+  const [selectedValue, setSelectedValue] = useState(options[0].id);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+    setSelectedValue(value);
+    onChange(value);
   };
+
+  const playEvent = () => {
+    setIsPlaying(true);
+  };
+
+  useEffect(() => {
+    if (isPlaying) {
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < options.length) {
+          setSelectedValue(options[index].id);
+          onChange(options[index].id);
+          index++;
+        } else {
+          clearInterval(interval);
+          setIsPlaying(false);
+        }
+      }, 100); // Adjust the speed as necessary (e.g., 100ms per frame)
+    }
+  }, [isPlaying]);
+
+  const currentOption = options.find(option => option.id === selectedValue);
 
   return (
     <div className="mb-12">
-      <label htmlFor="sample-select" className="block text-sm font-medium text-gray-700">
+      <label htmlFor="sample-range" className="block text-sm font-medium text-gray-700">
         Select Sample
       </label>
-      <select
-        id="sample-select"
+      <input
+        id="sample-range"
+        type="range"
+        min={Math.min(...options.map(option => option.id))}
+        max={Math.max(...options.map(option => option.id))}
+        value={selectedValue}
         onChange={handleChange}
-        className="mt-1 block w-full p-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-      >
-        {options.map(option => (
-          <option key={option.id} value={option.id}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+        className="w-full"
+      />
+      {currentOption && (
+        <div className="mt-2 text-center">
+          <div
+            className="inline-block p-4 rounded-full"
+            style={{
+              width: `${currentOption.magnitude}px`,
+              height: `${currentOption.magnitude}px`,
+              backgroundColor: '#4F46E5',
+            }}
+          />
+          <p className="mt-2 text-sm font-medium text-gray-700">{currentOption.label}</p>
+        </div>
+      )}
+      <button onClick={playEvent} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
+        Play Event
+      </button>
     </div>
   );
 };
 
-export default Dropdown;
+export default RangeSelector;
