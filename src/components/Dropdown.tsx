@@ -53,18 +53,11 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, onChange }) => {
       />
       {currentOption && (
         <div className="mt-2 text-center">
-          <div
-            className="inline-block p-4 rounded-full"
-            style={{
-              width: `${currentOption.magnitude}px`,
-              height: `${currentOption.magnitude}px`,
-              backgroundColor: '#4F46E5',
-            }}
-          />
+         
           <p className="mt-2 text-sm font-medium text-gray-700">{currentOption.label}</p>
         </div>
       )}
-      <button onClick={playEvent} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
+      <button onClick={playEvent} className=" px-4 py-2 bg-blue-500 text-white rounded-lg">
         Play Event
       </button>
     </div>

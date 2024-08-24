@@ -21,12 +21,12 @@ const DataView: React.FC<DataViewProps> = ({ accelerometerData }) => {
       </div>
       <div className="mt-4">
         {/* Visual Indicator */}
-        <div className="relative w-full h-4 bg-gray-200">
-          <div
+        {/* <div className="relative w-full h-4 bg-gray-200">
+          {/* <div
             className="absolute h-4 bg-blue-500"
             style={{ width: `${(accelerometerData.magnitude / 1400) * 100}%` }}
-          ></div>
-        </div>
+          ></div> 
+        </div> */}
       </div>
     </div>
   );
