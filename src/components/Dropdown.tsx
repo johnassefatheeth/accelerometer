@@ -31,7 +31,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, onChange }) => {
           clearInterval(interval);
           setIsPlaying(false);
         }
-      }, 100); // Adjust the speed as necessary (e.g., 100ms per frame)
+      }, 700); // Adjust the speed as necessary (e.g., 100ms per frame)
     }
   }, [isPlaying]);
 
@@ -53,7 +53,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, onChange }) => {
       />
       {currentOption && (
         <div className="mt-2 text-center">
-         
+          {/*  */}
           <p className="mt-2 text-sm font-medium text-gray-700">{currentOption.label}</p>
         </div>
       )}

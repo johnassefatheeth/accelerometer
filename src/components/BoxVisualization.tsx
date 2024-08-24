@@ -67,7 +67,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData }) => {
     const cameraDistance = 1;
     camera.position.lerp(
       new Vector3(boxPosition.x, boxPosition.y + cameraDistance, boxPosition.z + cameraDistance),
-      0.05
+      1
     );
     camera.lookAt(boxPosition);
 
