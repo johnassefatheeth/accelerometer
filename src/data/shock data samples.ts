@@ -21086,57 +21086,57 @@ const shockDataWithoutVideo64Samples1 = [
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
     "magnitude": 13245.680956447653,
     "accelerometer": {
-      "xAxis": 7360,
-      "yAxis": -7360,
-      "zAxis": -8192
+      "xAxis": 0,
+      "yAxis": 13245.68,
+      "zAxis": 0
     }
   },
   {
@@ -38421,10 +38421,10 @@ const shockDataWithoutVideo64Samples2But1200Samples = [
 ];
 
 export const InterpolatedShockData: IShockData[][] = [
-  actualShockDataInterpolated1,
+  // actualShockDataInterpolated1,
   // actualShockDataInterpolated2,
   // actualShockDataInterpolated3,
-  // actualShockDataInterpolated4,
+//   actualShockDataInterpolated4,
   // shockDataWithoutVideo64Samples1,
   // shockDataWithoutVideo64Samples2,
   // shockDataWithoutVideo64Samples2But1200Samples
@@ -38440,4 +38440,4 @@ export  interface IShockData {
   magnitude: number;
   accelerometer: Accelerometer
 }
-export default actualShockDataInterpolated1
+export default actualShockDataInterpolated4

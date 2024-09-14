@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import DataView from './components/DataView';
 import BoxVisualization from './components/BoxVisualization';
 import Dropdown from './components/Dropdown';
-import actualShockDataInterpolated1 from './data/shock data samples';
+import actualShockDataInterpolated4 from './data/shock data samples';
 
 const App = () => {
-  const [selectedSample, setSelectedSample] = useState(actualShockDataInterpolated1[0]);
+  const [selectedSample, setSelectedSample] = useState(actualShockDataInterpolated4[0]);
   const [maxMagnitudeSample, setMaxMagnitudeSample] = useState(null);
 
   useEffect(() => {
     // Function to find the sample with the largest magnitude
     const findMaxMagnitudeSample = () => {
-      const maxSample = actualShockDataInterpolated1.reduce((max, sample) => {
-        return sample.magnitude > max.magnitude ? sample : max;
-      }, actualShockDataInterpolated1[0]);
-
+      const minMagnitude = 600;
+      const maxMagnitude = 1400;
+    
+      const maxSample = actualShockDataInterpolated4.reduce((max, sample) => {
+        if (sample.magnitude >= minMagnitude && sample.magnitude <= maxMagnitude) {
+          return sample.magnitude > max.magnitude ? sample : max;
+        }
+        return max;
+      }, { magnitude: -Infinity });
+    
       setMaxMagnitudeSample(maxSample);
     };
 
@@ -22,7 +28,7 @@ const App = () => {
   }, []); // Empty dependency array means this runs once after the initial render
 
   const handleSampleChange = (id) => {
-    const sample = actualShockDataInterpolated1.find((sample, index) => index === id);
+    const sample = actualShockDataInterpolated4.find((sample, index) => index === id);
     if (sample) {
       setSelectedSample(sample);
     }
@@ -43,7 +49,7 @@ const App = () => {
           />
         </div>
          <Dropdown
-            options={actualShockDataInterpolated1.map((sample, index) => ({ id: index, label: `Sample ${index + 1}` }))}
+            options={actualShockDataInterpolated4.map((sample, index) => ({ id: index, label: `Sample ${index + 1}` }))}
             onChange={handleSampleChange}
           />
         <BoxVisualization
@@ -56,9 +62,9 @@ const App = () => {
           maxMagnitudeSample={maxMagnitudeSample ? {
             magnitude: maxMagnitudeSample.magnitude,
             coordinates: {
-              x: maxMagnitudeSample.accelerometer.xAxis,
-              y: maxMagnitudeSample.accelerometer.yAxis,
-              z: maxMagnitudeSample.accelerometer.zAxis
+              x: maxMagnitudeSample?.accelerometer.xAxis,
+              y: maxMagnitudeSample?.accelerometer.yAxis,
+              z: maxMagnitudeSample?.accelerometer.zAxis
             }
           } : null}
         />

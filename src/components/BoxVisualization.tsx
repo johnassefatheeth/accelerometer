@@ -30,7 +30,6 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 
   const fallingRef = useRef<THREE.Group | null>(null);
   const boxRef = useRef<THREE.Group | null>(null);
-  const speedLinesRef = useRef<THREE.Group | null>(null);
   const arrowRef = useRef<THREE.Mesh | null>(null);
 
   const targetPosition = useRef(new Vector3(0, 0, 0));
@@ -39,8 +38,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 
   useEffect(() => {
     if (!boxRef.current || !fallingRef.current) return;
-
-
+  
     if (accelerometerData.magnitude <= 600 || accelerometerData.magnitude >= 1400) {
       return;
     }
@@ -48,13 +46,12 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
     // Calculate rotation based on accelerometer data
     const rotationX = Math.atan2(accelerometerData.y, accelerometerData.z);
     const rotationY = Math.atan2(accelerometerData.x, accelerometerData.z);
-
+  
     targetRotation.current.set(rotationX, rotationY, 0);
-
+  
     let newPosition = fallingRef.current.position.clone();
-
-    const fallSpeedMultiplier = 10; // Controls the speed of the falling effect
-
+    const fallSpeedMultiplier = 0.4; // Controls the speed of the falling effect
+  
     // Update position based on accelerometer data
     if (accelerometerData.magnitude < 600) {
       newPosition.y -= 0.01 * fallSpeedMultiplier;
@@ -63,36 +60,10 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
       newPosition.y += accelerometerData.y * 0.01 * fallSpeedMultiplier;
       newPosition.z += accelerometerData.z * 0.01;
     }
-
-    // Apply a small displacement if a significant shock is detected
-    if (accelerometerData.isSignificantShock) {
-      const normalizedX = accelerometerData.x / accelerometerData.magnitude;
-      const normalizedY = accelerometerData.y / accelerometerData.magnitude;
-      const normalizedZ = accelerometerData.z / accelerometerData.magnitude;
-
-      const shockDirection = new Vector3(normalizedX, normalizedY, normalizedZ);
-      newPosition.add(shockDirection.multiplyScalar(0.1));
-
-      // Rotate speed lines in the direction of the shock
-      const shockRotationY = Math.atan2(normalizedX, normalizedZ);
-      speedLinesRotation.current.set(0, shockRotationY, 0);
-    } else {
-      // Reset speed lines rotation smoothly to default
-      speedLinesRotation.current.set(0, MathUtils.lerp(speedLinesRotation.current.y, 0, 0.1), 0);
-    }
-
+  
     targetPosition.current.copy(newPosition);
-
-    // Update arrow rotation and position if it matches the max magnitude sample
-    if (arrowRef.current && accelerometerData.magnitude === maxMagnitudeSample.magnitude) {
-      const arrowDirection = new Vector3(accelerometerData.x, accelerometerData.y, accelerometerData.z).normalize();
-      arrowRef.current.rotation.setFromVector3(arrowDirection);
-      arrowRef.current.position.copy(newPosition);
-      arrowRef.current.visible = true;
-    } else if (arrowRef.current) {
-      arrowRef.current.visible = false; // Hide the arrow if the magnitudes don't match
-    }
-  }, [accelerometerData, maxMagnitudeSample.magnitude]);
+  }, [accelerometerData, maxMagnitudeSample?.magnitude]);
+  
 
   useFrame(({ camera }) => {
     if (!fallingRef.current || !boxRef.current) return;
@@ -105,11 +76,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
     boxRef.current.rotation.y = MathUtils.lerp(boxRef.current.rotation.y, targetRotation.current.y, 0.1);
     boxRef.current.rotation.z = MathUtils.lerp(boxRef.current.rotation.z, targetRotation.current.z, 0.1);
 
-    // Smoothly rotate speed lines
-    if (speedLinesRef.current) {
-      speedLinesRef.current.rotation.y = MathUtils.lerp(speedLinesRef.current.rotation.y, speedLinesRotation.current.y, 0.1);
-    }
-
+    
     // Update camera position to follow the box
     camera.position.lerp(
       new Vector3(
@@ -117,7 +84,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
         fallingRef.current.position.y + 0.5, // Offset the camera slightly above the box
         fallingRef.current.position.z + 1.5  // Keep the camera behind the box
       ),
-      0.1
+      1
     );
 
     camera.lookAt(fallingRef.current.position);
@@ -147,26 +114,34 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
     });
   }, []);
 
-  let rotationY: number | undefined;
-  if (arrowRef.current && accelerometerData.magnitude === maxMagnitudeSample.magnitude) {
-    const arrowDirection = new Vector3(maxMagnitudeSample.coordinates.x, maxMagnitudeSample.coordinates.y, maxMagnitudeSample.coordinates.z).normalize();
-    rotationY = Math.atan2(arrowDirection.x, arrowDirection.z); // Calculate the rotation angle around the y-axis
-  }
+  const arrows = useMemo(() => {
+    if (!fallingRef.current) return [];
 
-  const arrows = Array.from({ length: 2 }, (_, i) => {
-    return (
+    // Calculate the direction from the box to the shock event
+    const shockDirection = new Vector3(
+      maxMagnitudeSample.coordinates.x ,
+      maxMagnitudeSample.coordinates.y ,
+      maxMagnitudeSample.coordinates.z 
+    ).normalize();
+
+    // Calculate the arrow's rotation based on the shock direction
+    const arrowRotation = new Euler().setFromVector3(shockDirection);
+
+    // Set position slightly outside the box in the direction of the shock event
+    const arrowPosition = shockDirection.clone().multiplyScalar(0.75);
+
+    // Return the arrow meshes with static position and rotation
+    return Array.from({ length: 2 }, (_, i) => (
       <mesh
         key={i}
-        position={new Vector3(-0.003, -0.6, 0)}
-        rotation={new THREE.Euler(0, rotationY, 0)}
-        ref={arrowRef}
+        position={arrowPosition.toArray()} // Set position directly in the mesh
+        rotation={arrowRotation.toArray()} // Set rotation directly in the mesh
       >
         <cylinderGeometry args={[0.02, 0.1, 0.4, 8]} />
         <meshStandardMaterial color="red" />
       </mesh>
-    );
-  });
-
+    ));
+  }, [maxMagnitudeSample]);
   return (
     <group ref={fallingRef}>
       <group ref={boxRef}>
@@ -178,7 +153,6 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
         <Text position={[0, 0.23, 0]} rotation={[Math.PI / 2, 0, 0]} fontSize={0.1} color="gray">Top</Text>
         <Text position={[0, -0.23, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.1} color="gray">Bottom</Text>
 
-      
         <mesh position={[0.2, 0.134, 0.31]} scale={[1.5, 1.5, 1]}>
           <planeGeometry args={[0.15, 0.08]} />
           <meshStandardMaterial map={trackerTexture} transparent={true} />
@@ -187,19 +161,19 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
           <planeGeometry args={[0.15, 0.08]} />
           <meshStandardMaterial map={trackerTexture2} transparent={true} />
         </mesh>
-        {accelerometerData.magnitude === maxMagnitudeSample.magnitude && arrows}
       </group>
-      <group ref={speedLinesRef}>
-        {accelerometerData.magnitude < 600 && speedLines}
+      <group >
+        {accelerometerData.magnitude <600 || accelerometerData.magnitude >1400 && speedLines}
       </group>
+      {accelerometerData.magnitude === maxMagnitudeSample?.magnitude && arrows}
     </group>
   );
 };
 
 const BoxVisualization: React.FC<BoxVisualizationProps> = (props) => {
   return (
-    <Canvas camera={{ position: [10, 0, 2], fov: 60 }}>
-      <ambientLight />
+    <Canvas>
+      <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} />
       <BoxModel {...props} />
       <OrbitControls />
