@@ -38421,13 +38421,13 @@ const shockDataWithoutVideo64Samples2But1200Samples = [
 ];
 
 export const InterpolatedShockData: IShockData[][] = [
-  // actualShockDataInterpolated1,
-  // actualShockDataInterpolated2,
-  // actualShockDataInterpolated3,
-//   actualShockDataInterpolated4,
-  // shockDataWithoutVideo64Samples1,
-  // shockDataWithoutVideo64Samples2,
-  // shockDataWithoutVideo64Samples2But1200Samples
+  actualShockDataInterpolated1,
+  actualShockDataInterpolated2,
+  actualShockDataInterpolated3,
+  actualShockDataInterpolated4,
+  shockDataWithoutVideo64Samples1,
+  shockDataWithoutVideo64Samples2,
+  shockDataWithoutVideo64Samples2But1200Samples
 ];
 
 interface Accelerometer {
@@ -38440,4 +38440,4 @@ export  interface IShockData {
   magnitude: number;
   accelerometer: Accelerometer
 }
-export default actualShockDataInterpolated4
+export default actualShockDataInterpolated2

@@ -31,7 +31,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, onChange }) => {
           clearInterval(interval);
           setIsPlaying(false);
         }
-      }, 10); // Adjust the speed as necessary (e.g., 100ms per frame)
+      }, 7); // Adjust the speed as necessary (e.g., 100ms per frame)
     }
   }, [isPlaying]);
 

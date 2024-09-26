@@ -115,33 +115,29 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
   }, []);
 
   const arrows = useMemo(() => {
-    if (!fallingRef.current) return [];
-
-    // Calculate the direction from the box to the shock event
-    const shockDirection = new Vector3(
-      maxMagnitudeSample.coordinates.x ,
-      maxMagnitudeSample.coordinates.y ,
-      maxMagnitudeSample.coordinates.z 
-    ).normalize();
-
-    // Calculate the arrow's rotation based on the shock direction
-    const arrowRotation = new Euler().setFromVector3(shockDirection);
-
-    // Set position slightly outside the box in the direction of the shock event
-    const arrowPosition = shockDirection.clone().multiplyScalar(0.75);
-
-    // Return the arrow meshes with static position and rotation
+    const direction = new Vector3(
+      maxMagnitudeSample.coordinates.x,
+      maxMagnitudeSample.coordinates.y,
+      maxMagnitudeSample.coordinates.z
+    ).normalize(); // Normalize to get the direction
+  
+    const arrowRotation = new Euler().setFromVector3(direction);
+  
     return Array.from({ length: 2 }, (_, i) => (
-      <mesh
-        key={i}
-        position={arrowPosition.toArray()} // Set position directly in the mesh
-        rotation={arrowRotation.toArray()} // Set rotation directly in the mesh
-      >
-        <cylinderGeometry args={[0.02, 0.1, 0.4, 8]} />
-        <meshStandardMaterial color="red" />
-      </mesh>
+      <group key={i} position={[0, 0, 0]} rotation={arrowRotation}>
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.02, 0.1, 0.4, 8]} />
+          <meshStandardMaterial color="red" />
+        </mesh>
+  
+        <mesh > {/* Keep a smaller offset to make the tail visually connected */}
+          <cylinderGeometry args={[0.02, 0.03, 1.5, 8]} />
+          <meshStandardMaterial color="red" />
+        </mesh>
+      </group>
     ));
   }, [maxMagnitudeSample]);
+  
   return (
     <group ref={fallingRef}>
       <group ref={boxRef}>
@@ -150,8 +146,8 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
         <Text position={[0, 0, -0.32]} rotation={[0, Math.PI, 0]} fontSize={0.1} color="gray">Back</Text>
         <Text position={[0.4, 0, 0]} rotation={[0, Math.PI / 2, 0]} fontSize={0.1} color="gray">Right</Text>
         <Text position={[-0.4, 0, 0]} rotation={[0, -Math.PI / 2, 0]} fontSize={0.1} color="gray">Left</Text>
-        <Text position={[0, 0.23, 0]} rotation={[Math.PI / 2, 0, 0]} fontSize={0.1} color="gray">Top</Text>
-        <Text position={[0, -0.23, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.1} color="gray">Bottom</Text>
+        <Text position={[0, 0.23, 0]} rotation={[Math.PI / 2, 9.5, 0]} fontSize={0.1} color="gray">Top</Text>
+        <Text position={[0, -0.23, 0]} rotation={[-Math.PI / 2, 9.45, 0]} fontSize={0.1} color="gray">Bottom</Text>
 
         <mesh position={[0.2, 0.134, 0.31]} scale={[1.5, 1.5, 1]}>
           <planeGeometry args={[0.15, 0.08]} />
@@ -163,7 +159,8 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
         </mesh>
       </group>
       <group >
-        {accelerometerData.magnitude <600 || accelerometerData.magnitude >1400 && speedLines}
+        {accelerometerData.magnitude <600 && speedLines}
+        {accelerometerData.magnitude <600 && <Text position={[0, 0.8, 0]} fontSize={0.1} color="gray">free fall</Text> }
       </group>
       {accelerometerData.magnitude === maxMagnitudeSample?.magnitude && arrows}
     </group>
