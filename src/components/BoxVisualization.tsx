@@ -43,16 +43,14 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
       return;
     }
   
-    // Calculate rotation based on accelerometer data
     const rotationX = Math.atan2(accelerometerData.y, accelerometerData.z);
     const rotationY = Math.atan2(accelerometerData.x, accelerometerData.z);
   
     targetRotation.current.set(rotationX, rotationY, 0);
   
     let newPosition = fallingRef.current.position.clone();
-    const fallSpeedMultiplier = 0.4; // Controls the speed of the falling effect
-  
-    // Update position based on accelerometer data
+    const fallSpeedMultiplier = 0.4; 
+
     if (accelerometerData.magnitude < 600) {
       newPosition.y -= 0.01 * fallSpeedMultiplier;
     } else if (accelerometerData.magnitude >= 600 && accelerometerData.magnitude <= 1400) {
@@ -68,21 +66,18 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
   useFrame(({ camera }) => {
     if (!fallingRef.current || !boxRef.current) return;
 
-    // Smoothly update the position of the falling group
     fallingRef.current.position.lerp(targetPosition.current, 0.1);
 
-    // Apply rotation only to the box
     boxRef.current.rotation.x = MathUtils.lerp(boxRef.current.rotation.x, targetRotation.current.x, 0.1);
     boxRef.current.rotation.y = MathUtils.lerp(boxRef.current.rotation.y, targetRotation.current.y, 0.1);
     boxRef.current.rotation.z = MathUtils.lerp(boxRef.current.rotation.z, targetRotation.current.z, 0.1);
 
     
-    // Update camera position to follow the box
     camera.position.lerp(
       new Vector3(
-        fallingRef.current.position.x + 0.5,
-        fallingRef.current.position.y + 0.5, // Offset the camera slightly above the box
-        fallingRef.current.position.z + 1.5  // Keep the camera behind the box
+        fallingRef.current.position.x ,
+        fallingRef.current.position.y , 
+        fallingRef.current.position.z + 1.5 
       ),
       1
     );
@@ -90,23 +85,21 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
     camera.lookAt(fallingRef.current.position);
   });
 
-  // Create speed lines
   const speedLines = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const angle = (i / 12) * Math.PI * 2;
       const x = Math.cos(angle) * 2.5;
       const z = Math.sin(angle) * 2.5;
 
-      // Define the geometry for each line with tapered ends
       const geometry = new THREE.BufferGeometry().setFromPoints([
-        new Vector3(x * 0.2, -0.2, z * 0.2),  // Top of the line (narrower)
-        new Vector3(x * 0.5, 1.5, z * 0.5),    // Bottom of the line (wider)
+        new Vector3(x * 0.2, -0.2, z * 0.2),
+        new Vector3(x * 0.5, 1.5, z * 0.5),   
       ]);
 
       const material = new THREE.LineBasicMaterial({
-        color: new THREE.Color(0x000000),  // Black color
-        linewidth: 0.51,      // Dynamic width for realism
-        opacity: 0.2,     // Dynamic opacity for depth
+        color: new THREE.Color(0x000000),  
+        linewidth: 0.51, 
+        opacity: 0.2,    
         transparent: true,
       });
 
@@ -116,10 +109,10 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 
   const arrows = useMemo(() => {
     const direction = new Vector3(
-      maxMagnitudeSample.coordinates.x,
       maxMagnitudeSample.coordinates.y,
+      maxMagnitudeSample.coordinates.x,
       maxMagnitudeSample.coordinates.z
-    ).normalize(); // Normalize to get the direction
+    ).normalize(); 
   
     const arrowRotation = new Euler().setFromVector3(direction);
   
@@ -130,7 +123,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
           <meshStandardMaterial color="red" />
         </mesh>
   
-        <mesh > {/* Keep a smaller offset to make the tail visually connected */}
+        <mesh >
           <cylinderGeometry args={[0.02, 0.03, 1.5, 8]} />
           <meshStandardMaterial color="red" />
         </mesh>
