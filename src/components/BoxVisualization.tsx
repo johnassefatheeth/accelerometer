@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { TextureLoader, Vector3, MathUtils, Euler } from 'three';
+import { TextureLoader, Vector3 } from 'three';
 import { OrbitControls, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -30,11 +30,10 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 
   const fallingRef = useRef<THREE.Group | null>(null);
   const boxRef = useRef<THREE.Group | null>(null);
-  const arrowRef = useRef<THREE.Mesh | null>(null);
+  const arrowRef = useRef<THREE.Group | null>(null);
 
   const targetPosition = useRef(new Vector3(0, 0, 0));
   const targetRotation = useRef(new Vector3(0, 0, 0));
-  const speedLinesRotation = useRef(new Euler(0, 0, 0));
 
   useEffect(() => {
     if (!boxRef.current || !fallingRef.current) return;
@@ -42,24 +41,12 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
     if (accelerometerData.magnitude <= 600 || accelerometerData.magnitude >= 1400) {
       return;
     }
-  
+
+    // Calculate rotation based on accelerometer data
     const rotationX = Math.atan2(accelerometerData.y, accelerometerData.z);
     const rotationY = Math.atan2(accelerometerData.x, accelerometerData.z);
   
     targetRotation.current.set(rotationX, rotationY, 0);
-  
-    let newPosition = fallingRef.current.position.clone();
-    const fallSpeedMultiplier = 0.4; 
-
-    if (accelerometerData.magnitude < 600) {
-      newPosition.y -= 0.01 * fallSpeedMultiplier;
-    } else if (accelerometerData.magnitude >= 600 && accelerometerData.magnitude <= 1400) {
-      newPosition.x += accelerometerData.x * 0.01;
-      newPosition.y += accelerometerData.y * 0.01 * fallSpeedMultiplier;
-      newPosition.z += accelerometerData.z * 0.01;
-    }
-  
-    targetPosition.current.copy(newPosition);
   }, [accelerometerData, maxMagnitudeSample?.magnitude]);
   
 
@@ -68,16 +55,15 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 
     fallingRef.current.position.lerp(targetPosition.current, 0.1);
 
-    boxRef.current.rotation.x = MathUtils.lerp(boxRef.current.rotation.x, targetRotation.current.x, 0.1);
-    boxRef.current.rotation.y = MathUtils.lerp(boxRef.current.rotation.y, targetRotation.current.y, 0.1);
-    boxRef.current.rotation.z = MathUtils.lerp(boxRef.current.rotation.z, targetRotation.current.z, 0.1);
+    boxRef.current.rotation.x = THREE.MathUtils.lerp(boxRef.current.rotation.x, targetRotation.current.x, 0.1);
+    boxRef.current.rotation.y = THREE.MathUtils.lerp(boxRef.current.rotation.y, targetRotation.current.y, 0.1);
+    boxRef.current.rotation.z = THREE.MathUtils.lerp(boxRef.current.rotation.z, targetRotation.current.z, 0.1);
 
-    
     camera.position.lerp(
       new Vector3(
         fallingRef.current.position.x ,
         fallingRef.current.position.y , 
-        fallingRef.current.position.z + 1.5 
+        fallingRef.current.position.z + 1.2
       ),
       1
     );
@@ -108,32 +94,35 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
   }, []);
 
   const arrows = useMemo(() => {
-    const direction = new Vector3(
+    // Create vector from accelerometer data and normalize it
+    const accelVector = new Vector3(
       maxMagnitudeSample.coordinates.y,
       maxMagnitudeSample.coordinates.x,
       maxMagnitudeSample.coordinates.z
-    ).normalize(); 
-  
-    const arrowRotation = new Euler().setFromVector3(direction);
-  
-    return Array.from({ length: 2 }, (_, i) => (
-      <group key={i} position={[0, 0, 0]} rotation={arrowRotation}>
-        <mesh position={[0, 0.8, 0]}>
-          <cylinderGeometry args={[0.02, 0.1, 0.4, 8]} />
-          <meshStandardMaterial color="red" />
-        </mesh>
-  
-        <mesh >
-          <cylinderGeometry args={[0.02, 0.03, 1.5, 8]} />
-          <meshStandardMaterial color="red" />
-        </mesh>
+    ).normalize();
+
+    // Calculate arrow direction based on normalized vector
+    const arrowDir = new THREE.ArrowHelper(
+      accelVector,           // Direction of the arrow
+      new Vector3(0, 0, 0),  // Starting point of the arrow
+      1.2,                     // Length of the arrow (increase this value to make the arrow longer)
+      0xff0000,              // Color of the arrow
+      0.2,                   // Length of the arrowhead (increase this value to make the arrowhead bigger)
+      0.2                    // Width of the arrowhead (adjust for a wider arrowhead)
+    );
+
+
+    const arrowPosition = accelVector.clone().multiplyScalar(-0.5);
+    return (
+      <group ref={arrowRef}  position={arrowPosition}>
+        <primitive object={arrowDir} />
       </group>
-    ));
+    );
   }, [maxMagnitudeSample]);
-  
+
   return (
     <group ref={fallingRef}>
-      <group ref={boxRef}>
+      <group ref={boxRef} position={[0,0,0]}>
         <primitive object={gltf.scene} />
         <Text position={[0, 0, 0.32]} fontSize={0.1} color="gray">Front</Text>
         <Text position={[0, 0, -0.32]} rotation={[0, Math.PI, 0]} fontSize={0.1} color="gray">Back</Text>
@@ -151,9 +140,9 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
           <meshStandardMaterial map={trackerTexture2} transparent={true} />
         </mesh>
       </group>
-      <group >
-        {accelerometerData.magnitude <600 && speedLines}
-        {accelerometerData.magnitude <600 && <Text position={[0, 0.8, 0]} fontSize={0.1} color="gray">free fall</Text> }
+      <group>
+        {accelerometerData.magnitude < 600 && speedLines}
+        {accelerometerData.magnitude < 600 && <Text position={[0, 0.8, 0]} fontSize={0.1} color="gray">free fall</Text>}
       </group>
       {accelerometerData.magnitude === maxMagnitudeSample?.magnitude && arrows}
     </group>
@@ -163,7 +152,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 const BoxVisualization: React.FC<BoxVisualizationProps> = (props) => {
   return (
     <Canvas>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={1} />
       <pointLight position={[10, 10, 10]} />
       <BoxModel {...props} />
       <OrbitControls />

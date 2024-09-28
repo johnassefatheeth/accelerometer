@@ -38440,4 +38440,4 @@ export  interface IShockData {
   magnitude: number;
   accelerometer: Accelerometer
 }
-export default shockDataWithoutVideo64Samples2But1200Samples
+export default   actualShockDataInterpolated4
