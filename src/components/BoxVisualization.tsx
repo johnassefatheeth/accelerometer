@@ -112,8 +112,12 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
 
     const arrowPosition = accelVector.clone().multiplyScalar(-1.3);
     return (
-      <group ref={arrowRef}  position={arrowPosition}>
+      <group ref={arrowRef} position={arrowPosition}>
         <primitive object={arrowDir} />
+        <mesh position={accelVector} rotation={arrowDir.rotation}>
+          <cylinderGeometry args={[0.03, 0.03, 1.8, 20]} /> 
+          <meshStandardMaterial color={0xff0000} />
+        </mesh>
       </group>
     );
   }, [maxMagnitudeSample]);
