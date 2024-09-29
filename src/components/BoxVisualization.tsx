@@ -115,7 +115,7 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
       <group ref={arrowRef} position={arrowPosition}>
         <primitive object={arrowDir} />
         <mesh position={accelVector} rotation={arrowDir.rotation}>
-          <cylinderGeometry args={[0.03, 0.03, 1.8, 20]} /> 
+          <cylinderGeometry args={[0.03, 0.03, 1.85, 20]} /> 
           <meshStandardMaterial color={0xff0000} />
         </mesh>
       </group>
