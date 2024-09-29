@@ -94,25 +94,23 @@ const BoxModel: React.FC<BoxVisualizationProps> = ({ accelerometerData, maxMagni
   }, []);
 
   const arrows = useMemo(() => {
-    // Create vector from accelerometer data and normalize it
     const accelVector = new Vector3(
       maxMagnitudeSample.coordinates.y,
       maxMagnitudeSample.coordinates.x,
       maxMagnitudeSample.coordinates.z
     ).normalize();
 
-    // Calculate arrow direction based on normalized vector
     const arrowDir = new THREE.ArrowHelper(
-      accelVector,           // Direction of the arrow
-      new Vector3(0, 0, 0),  // Starting point of the arrow
-      1.2,                     // Length of the arrow (increase this value to make the arrow longer)
-      0xff0000,              // Color of the arrow
-      0.2,                   // Length of the arrowhead (increase this value to make the arrowhead bigger)
-      0.2                    // Width of the arrowhead (adjust for a wider arrowhead)
+      accelVector,           
+      new Vector3(0, 0, 0),  
+      2,                     
+      0xff0000,              
+      0.2,                
+      0.2                    
     );
 
 
-    const arrowPosition = accelVector.clone().multiplyScalar(-0.5);
+    const arrowPosition = accelVector.clone().multiplyScalar(-1.3);
     return (
       <group ref={arrowRef}  position={arrowPosition}>
         <primitive object={arrowDir} />
